@@ -1,0 +1,68 @@
+// Prisma schema for Orbit — Supabase (PostgreSQL)
+// Run: npx prisma db push
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Card {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  category    String
+
+  // SM-2 fields
+  intervalDays Int      @default(1)
+  easeFactor   Float    @default(2.5)
+  repetitions  Int      @default(0)
+  nextReview   DateTime @default(now())
+  lastReviewed DateTime?
+
+  // Deck / sharing
+  deckId      String?
+  deck        Deck?     @relation(fields: [deckId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  reviews     Review[]
+
+  @@index([userId])
+  @@index([deckId])
+  @@index([nextReview])
+}
+
+model Review {
+  id                String   @id @default(cuid())
+  cardId            String
+  card              Card     @relation(fields: [cardId], references: [id])
+  difficulty        String
+  retentionAtReview Float
+  intervalAfter     Int
+  reviewedAt        DateTime @default(now())
+
+  @@index([cardId])
+  @@index([reviewedAt])
+}
+
+model Deck {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  shareId     String   @unique @default(cuid())
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cards       Card[]
+
+  @@index([userId])
+  @@index([shareId])
+}

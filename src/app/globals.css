@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --nebula: #7c6aff;
+  --aurora: #34d399;
+  --solar: #fbbf24;
+  --pulsar: #f87171;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: #050508;
+  color: #e2e8f0;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #252542; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4f43d4; }
+
+/* Retention gauge glow */
+.retention-critical { color: #f87171; }
+.retention-low { color: #fbbf24; }
+.retention-good { color: #34d399; }
+.retention-strong { color: #7c6aff; }
+
+/* Star field */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: var(--min-op, 0.1); }
+  50% { opacity: var(--max-op, 0.7); }
+}
+
+/* Card hover */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* Forgetting curve gradient line */
+.curve-critical { stroke: #f87171; }
+.curve-warning { stroke: #fbbf24; }
+.curve-good { stroke: #34d399; }
+
+/* Ripple button */
+.btn-review {
+  position: relative;
+  overflow: hidden;
+}
+.btn-review::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn-review:hover::after { opacity: 1; }
