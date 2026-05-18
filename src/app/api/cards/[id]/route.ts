@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { COOKIE_NAME } from "@/lib/userId";
 
+export const dynamic = 'force-dynamic';
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const userId = cookies().get(COOKIE_NAME)?.value;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
