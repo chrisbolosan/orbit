@@ -4,6 +4,9 @@ import { cookies } from "next/headers";
 import { COOKIE_NAME } from "@/lib/userId";
 import { sm2, Difficulty } from "@/lib/srs";
 
+//force dynamic route
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const userId = cookies().get(COOKIE_NAME)?.value;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
