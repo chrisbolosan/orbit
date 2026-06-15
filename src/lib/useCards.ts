@@ -47,10 +47,26 @@ export function useCards() {
     }
   }, []);
 
+  const updateCard = useCallback(async (id: string, fields: { title?: string; description?: string; category?: string }) => {
+    const res = await fetch(`/api/cards/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(fields),
+    });
+    if (res.ok) {
+      const updated: CardWithRetention = await res.json();
+      setCards((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, ...updated, retention: c.retention, reviews: c.reviews } : c
+        )
+      );
+    }
+  }, []);
+
   const deleteCard = useCallback(async (id: string) => {
     await fetch(`/api/cards/${id}`, { method: "DELETE" });
     setCards((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
-  return { cards, loaded, error, addCard, reviewCard, deleteCard, refetch: fetchCards };
+  return { cards, loaded, error, addCard, reviewCard, updateCard, deleteCard, refetch: fetchCards };
 }

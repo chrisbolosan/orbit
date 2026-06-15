@@ -3,11 +3,12 @@ import { CardWithRetention, CATEGORIES, getStatus, getDaysUntil, Difficulty } fr
 import { RetentionRing } from "./RetentionRing";
 import { ForgettingCurveMini } from "./ForgettingCurve";
 import { useState } from "react";
-import { Trash2, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, TrendingUp, Pencil, Check, X } from "lucide-react";
 
 interface CardItemProps {
   card: CardWithRetention;
   onReview: (id: string, difficulty: Difficulty, retention: number) => void;
+  onUpdate: (id: string, fields: { title?: string; description?: string; category?: string }) => void;
   onDelete: (id: string) => void;
   onOpenCurve: (card: CardWithRetention) => void;
 }
@@ -27,9 +28,36 @@ const DIFFICULTY_BUTTONS: { key: Difficulty; label: string; emoji: string; color
   { key: "mastered",  label: "Mastered",  emoji: "🚀", color: "#7c6aff" },
 ];
 
-export function CardItem({ card, onReview, onDelete, onOpenCurve }: CardItemProps) {
+export function CardItem({ card, onReview, onUpdate, onDelete, onOpenCurve }: CardItemProps) {
   const [reviewing, setReviewing] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(card.title);
+  const [noteDraft, setNoteDraft] = useState(card.description);
+  const [categoryDraft, setCategoryDraft] = useState(card.category);
+
+  const startEdit = () => {
+    setTitleDraft(card.title);
+    setNoteDraft(card.description);
+    setCategoryDraft(card.category);
+    setEditing(true);
+    setExpanded(true);
+  };
+
+  const saveEdit = () => {
+    const fields: { title?: string; description?: string; category?: string } = {};
+    const title = titleDraft.trim();
+    const description = noteDraft.trim();
+    if (title && title !== card.title) fields.title = title;
+    if (description !== card.description) fields.description = description;
+    if (categoryDraft !== card.category) fields.category = categoryDraft;
+    if (Object.keys(fields).length > 0) onUpdate(card.id, fields);
+    setEditing(false);
+  };
+
+  const cancelEdit = () => {
+    setEditing(false);
+  };
 
   const status = getStatus(card);
   const cfg = STATUS_CONFIG[status];
@@ -157,6 +185,131 @@ export function CardItem({ card, onReview, onDelete, onOpenCurve }: CardItemProp
       {/* Expanded review panel */}
       {expanded && (
         <div style={{ marginTop: "16px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "14px" }}>
+          {/* Card editor */}
+          <div style={{ marginBottom: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+              <span style={{ fontSize: "11px", color: "#64748b", fontWeight: 500 }}>Details</span>
+              {!editing && (
+                <button
+                  onClick={startEdit}
+                  title="Edit card"
+                  style={{
+                    display: "flex", alignItems: "center", gap: "4px",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "#7c6aff", fontSize: "11px", padding: 0,
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  <Pencil size={11} /> Edit
+                </button>
+              )}
+            </div>
+
+            {editing ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div>
+                  <label style={{ fontSize: "11px", color: "#64748b", display: "block", marginBottom: "4px" }}>Topic</label>
+                  <input
+                    value={titleDraft}
+                    onChange={(e) => setTitleDraft(e.target.value)}
+                    placeholder="Topic"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveEdit();
+                      if (e.key === "Escape") cancelEdit();
+                    }}
+                    style={{
+                      width: "100%", background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(124,106,255,0.25)", borderRadius: "10px",
+                      padding: "8px 12px", color: "#e2e8f0", fontSize: "13px",
+                      fontFamily: "'DM Sans', sans-serif", outline: "none",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "11px", color: "#64748b", display: "block", marginBottom: "4px" }}>Notes</label>
+                  <textarea
+                    value={noteDraft}
+                    onChange={(e) => setNoteDraft(e.target.value)}
+                    placeholder="What do you want to remember about this?"
+                    rows={3}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveEdit();
+                      if (e.key === "Escape") cancelEdit();
+                    }}
+                    style={{
+                      width: "100%", background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(124,106,255,0.25)", borderRadius: "10px",
+                      padding: "10px 12px", color: "#e2e8f0", fontSize: "13px",
+                      fontFamily: "'DM Sans', sans-serif", outline: "none", resize: "vertical",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "11px", color: "#64748b", display: "block", marginBottom: "6px" }}>Category</label>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setCategoryDraft(cat.id)}
+                        style={{
+                          padding: "5px 10px", borderRadius: "8px",
+                          border: `1px solid ${categoryDraft === cat.id ? cat.color + "60" : "rgba(255,255,255,0.08)"}`,
+                          background: categoryDraft === cat.id ? cat.color + "20" : "rgba(255,255,255,0.03)",
+                          color: categoryDraft === cat.id ? cat.color : "#64748b",
+                          fontSize: "11px", cursor: "pointer",
+                          fontFamily: "'DM Sans', sans-serif",
+                          display: "flex", alignItems: "center", gap: "4px",
+                        }}
+                      >
+                        {cat.icon} {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: "6px", marginTop: "2px", justifyContent: "flex-end" }}>
+                  <button
+                    onClick={cancelEdit}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "4px",
+                      padding: "6px 12px", borderRadius: "8px",
+                      border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)",
+                      color: "#94a3b8", fontSize: "12px", cursor: "pointer",
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    <X size={12} /> Cancel
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    disabled={!titleDraft.trim()}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "4px",
+                      padding: "6px 12px", borderRadius: "8px", border: "none",
+                      background: titleDraft.trim() ? "linear-gradient(135deg, #7c6aff, #4f43d4)" : "rgba(255,255,255,0.05)",
+                      color: titleDraft.trim() ? "#fff" : "#475569",
+                      fontSize: "12px", fontWeight: 500,
+                      cursor: titleDraft.trim() ? "pointer" : "not-allowed",
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    <Check size={12} /> Save
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p style={{
+                fontSize: "13px", color: card.description ? "#94a3b8" : "#475569",
+                margin: 0, whiteSpace: "pre-wrap", fontStyle: card.description ? "normal" : "italic",
+              }}>
+                {card.description || "No notes yet."}
+              </p>
+            )}
+          </div>
+
           {!reviewing ? (
             <button
               onClick={() => setReviewing(true)}

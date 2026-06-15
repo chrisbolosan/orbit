@@ -17,7 +17,7 @@ type SortMode = "due" | "retention" | "recent" | "name";
 type FilterStatus = "all" | "due" | "upcoming" | "learned" | "new";
 
 export default function Home() {
-  const { cards, loaded, error, addCard, reviewCard, deleteCard } = useCards();
+  const { cards, loaded, error, addCard, reviewCard, updateCard, deleteCard } = useCards();
   const [showAdd, setShowAdd] = useState(false);
   const [showSession, setShowSession] = useState(false);
   const [showShare, setShowShare] = useState(false);
@@ -312,6 +312,7 @@ export default function Home() {
                 key={card.id}
                 card={card}
                 onReview={reviewCard}
+                onUpdate={updateCard}
                 onDelete={deleteCard}
                 onOpenCurve={setCurveCard}
               />
