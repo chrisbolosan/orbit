@@ -68,7 +68,8 @@ export function sm2(
 export function computeRetention(lastReviewed: string | null, intervalDays: number): number {
   if (!lastReviewed) return 100;
   const daysSince = (Date.now() - new Date(lastReviewed).getTime()) / 86_400_000;
-  const stability = Math.max(1, intervalDays * 0.7);
+  // 1.06 places retention at ~39% when a card comes due (exp(-1/1.06) ≈ 0.39)
+  const stability = Math.max(1, intervalDays * 1.06);
   return Math.max(0, Math.min(100, Math.exp(-daysSince / stability) * 100));
 }
 
@@ -88,7 +89,7 @@ export function generateCurve(
   card: CardWithRetention,
   days = 365
 ): { day: number; date: string; retention: number; isReviewDay: boolean }[] {
-  const stability = Math.max(1, card.intervalDays * 0.7);
+  const stability = Math.max(1, card.intervalDays * 1.06);
   const daysSince = card.lastReviewed
     ? (Date.now() - new Date(card.lastReviewed).getTime()) / 86_400_000
     : 0;
