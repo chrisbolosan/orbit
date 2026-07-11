@@ -201,7 +201,7 @@ export default function Home() {
         </div>
 
         {/* Timeline + heatmap side by side on wider screens */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "12px", marginBottom: "24px" }}>
           <ReviewTimeline cards={cards} />
           <ActivityHeatmap />
         </div>
